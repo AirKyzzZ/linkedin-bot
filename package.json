@@ -1,0 +1,41 @@
+{
+  "name": "linkedin-bot",
+  "version": "1.0.0",
+  "description": "Automated LinkedIn posting with AI-generated content and Todoist approval workflow",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/scripts/generate-drafts.ts",
+    "post": "tsx src/scripts/post-approved.ts",
+    "post:dry-run": "tsx src/scripts/post-approved.ts --dry-run",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "linkedin",
+    "automation",
+    "ai",
+    "todoist"
+  ],
+  "author": "Maxime Mansiet",
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@doist/todoist-api-typescript": "^3.0.3",
+    "dotenv": "^16.4.7",
+    "groq-sdk": "^0.37.0",
+    "playwright": "^1.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
