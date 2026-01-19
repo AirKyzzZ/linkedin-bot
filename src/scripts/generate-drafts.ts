@@ -20,7 +20,7 @@ async function main(): Promise<void> {
     const posts = await contentGenerator.generateMultiplePosts(draftsNeeded);
 
     for (const post of posts) {
-      await todoistService.createDraft(post.topic, post.content, post.format);
+      await todoistService.createDraft(post.topic, post.content, post.format, post.suggestedDate);
       logger.info(`Draft created: ${post.topic}`);
     }
 

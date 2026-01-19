@@ -83,13 +83,15 @@ Pour chaque idée:
 - angle: l'histoire ou insight personnel à raconter
 - hook: 1 ligne accrocheuse (pattern interrupt)
 - theme: le thème parmi les 5 ci-dessus
+- suggestedDay: 'Monday', 'Wednesday', ou 'Friday' (Choisis le jour idéal pour ce type de contenu pour maximiser la viralité)
+- suggestedTime: '08:00' ou '13:00' (l'heure idéale pour ce sujet)
 
 IMPORTANT: Les 5 idées doivent avoir 5 thèmes DIFFÉRENTS.
 
 Réponds en JSON:
 {
   "topics": [
-    {"title": "...", "angle": "...", "hook": "...", "theme": "..."}
+    {"title": "...", "angle": "...", "hook": "...", "theme": "...", "suggestedDay": "...", "suggestedTime": "..."}
   ]
 }`;
 

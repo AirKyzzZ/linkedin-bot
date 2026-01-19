@@ -16,6 +16,8 @@ interface TopicIdea {
   angle: string;
   hook: string;
   theme: string;
+  suggestedDay: string;
+  suggestedTime: string;
 }
 
 interface GeneratedPost {
@@ -23,6 +25,7 @@ interface GeneratedPost {
   topic: string;
   format: PostFormat;
   characterCount: number;
+  suggestedDate?: string;
 }
 
 const PRIMARY_MODEL = 'llama-3.3-70b-versatile';
@@ -121,7 +124,7 @@ export class ContentGenerator {
     }
   }
 
-  async generatePost(topic: string, additionalContext?: string): Promise<GeneratedPost> {
+  async generatePost(topic: string, additionalContext?: string, suggestedDate?: string): Promise<GeneratedPost> {
     const format = this.getNextFormat();
     logger.info(`Generating post for topic: "${topic}" with format: ${format}`);
 
@@ -163,6 +166,7 @@ export class ContentGenerator {
         topic,
         format,
         characterCount,
+        suggestedDate,
       };
     };
 
@@ -186,7 +190,12 @@ export class ContentGenerator {
 
     for (const topic of topics) {
       try {
-        const post = await this.generatePost(topic.title, `Angle: ${topic.angle}\nHook suggéré: ${topic.hook}`);
+        const suggestedDate = `${topic.suggestedDay} at ${topic.suggestedTime}`;
+        const post = await this.generatePost(
+            topic.title, 
+            `Angle: ${topic.angle}\nHook suggéré: ${topic.hook}`,
+            suggestedDate
+        );
         posts.push(post);
 
         await new Promise((resolve) => setTimeout(resolve, 1000));

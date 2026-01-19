@@ -92,7 +92,7 @@ export class TodoistService {
     }
   }
 
-  async createDraft(topic: string, content: string, format: string): Promise<DraftPost> {
+  async createDraft(topic: string, content: string, format: string, suggestedDate?: string): Promise<DraftPost> {
     if (!this.projectId) {
       await this.initialize();
     }
@@ -100,9 +100,15 @@ export class TodoistService {
     logger.info(`Creating draft: ${topic}`);
 
     try {
+      let description = `**Format:** ${format}`;
+      if (suggestedDate) {
+        description += `\n**Suggested Time:** ${suggestedDate}`;
+      }
+      description += `\n\n---\n\n${content}`;
+
       const task = await this.api.addTask({
         content: `📝 ${topic}`,
-        description: `**Format:** ${format}\n\n---\n\n${content}`,
+        description,
         projectId: this.projectId!,
         labels: [DRAFT_LABEL],
         priority: 2,
