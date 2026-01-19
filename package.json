@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "generate": "tsx src/scripts/generate-drafts.ts",
-    "post": "tsx src/scripts/post-approved.ts",
-    "post:dry-run": "tsx src/scripts/post-approved.ts --dry-run",
+    "schedule": "tsx src/scripts/schedule-approved.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src",
     "typecheck": "tsc --noEmit"
@@ -26,8 +25,7 @@
   "dependencies": {
     "@doist/todoist-api-typescript": "^3.0.3",
     "dotenv": "^16.4.7",
-    "groq-sdk": "^0.37.0",
-    "playwright": "^1.49.1"
+    "groq-sdk": "^0.37.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

@@ -19,6 +19,7 @@ interface ApprovedPost {
 const DRAFT_LABEL = 'linkedin-draft';
 const APPROVED_LABEL = 'linkedin-approved';
 const POSTED_LABEL = 'linkedin-posted';
+const SCHEDULED_LABEL = 'linkedin-scheduled';
 
 type ApiResponse<T> = T[] | { results: T[] };
 
@@ -72,7 +73,7 @@ export class TodoistService {
   }
 
   private async ensureLabelsExist(): Promise<void> {
-    const requiredLabels = [DRAFT_LABEL, APPROVED_LABEL, POSTED_LABEL];
+    const requiredLabels = [DRAFT_LABEL, APPROVED_LABEL, POSTED_LABEL, SCHEDULED_LABEL];
 
     try {
       const response = await this.api.getLabels();
@@ -140,6 +141,55 @@ export class TodoistService {
       return tasks.length;
     } catch (error) {
       logger.error('Failed to get draft count', error);
+      throw error;
+    }
+  }
+
+  async getScheduledPosts(): Promise<{ taskId: string; dueString?: string }[]> {
+    if (!this.projectId) {
+      await this.initialize();
+    }
+
+    logger.info('Fetching scheduled posts...');
+
+    try {
+      const response = await this.api.getTasks({
+        projectId: this.projectId!,
+        label: SCHEDULED_LABEL,
+      });
+
+      const tasks = extractResults(
+        response as ApiResponse<{ id: string; due?: { string: string; date: string } }>
+      );
+
+      return tasks.map((t) => ({
+        taskId: t.id,
+        dueString: t.due?.date || t.due?.string,
+      }));
+    } catch (error) {
+      logger.error('Failed to get scheduled posts', error);
+      throw error;
+    }
+  }
+
+  async scheduleTask(taskId: string, dueString: string): Promise<void> {
+    logger.info(`Scheduling task ${taskId} for ${dueString}`);
+
+    try {
+      const task = await this.api.getTask(taskId);
+      const currentLabels = task.labels.filter((l) => l !== APPROVED_LABEL);
+      if (!currentLabels.includes(SCHEDULED_LABEL)) {
+        currentLabels.push(SCHEDULED_LABEL);
+      }
+
+      await this.api.updateTask(taskId, {
+        dueString,
+        labels: currentLabels,
+      });
+
+      logger.info(`Task ${taskId} scheduled`);
+    } catch (error) {
+      logger.error(`Failed to schedule task: ${taskId}`, error);
       throw error;
     }
   }
