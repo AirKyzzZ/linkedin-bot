@@ -16,6 +16,14 @@ interface ApprovedPost {
   content: string;
 }
 
+interface ImagePrompt {
+  prompt: string;
+  style: string;
+  mood: string;
+  colors: string;
+  composition: string;
+}
+
 const DRAFT_LABEL = 'linkedin-draft';
 const APPROVED_LABEL = 'linkedin-approved';
 const POSTED_LABEL = 'linkedin-posted';
@@ -92,7 +100,13 @@ export class TodoistService {
     }
   }
 
-  async createDraft(topic: string, content: string, format: string, suggestedDate?: string): Promise<DraftPost> {
+  async createDraft(
+    topic: string,
+    content: string,
+    format: string,
+    suggestedDate?: string,
+    imagePrompt?: ImagePrompt
+  ): Promise<DraftPost> {
     if (!this.projectId) {
       await this.initialize();
     }
@@ -114,6 +128,10 @@ export class TodoistService {
         priority: 2,
       });
 
+      if (imagePrompt) {
+        await this.createImagePromptSubtask(task.id, imagePrompt);
+      }
+
       const draft: DraftPost = {
         id: task.id,
         topic,
@@ -126,6 +144,27 @@ export class TodoistService {
       return draft;
     } catch (error) {
       logger.error('Failed to create draft', error);
+      throw error;
+    }
+  }
+
+  private async createImagePromptSubtask(parentTaskId: string, imagePrompt: ImagePrompt): Promise<void> {
+    logger.info(`Creating image prompt subtask for task: ${parentTaskId}`);
+
+    try {
+      const jsonPrompt = JSON.stringify(imagePrompt, null, 2);
+
+      await this.api.addTask({
+        content: '🎨 Generate image with nano banana',
+        description: `**Image Generation Prompt (JSON):**\n\n\`\`\`json\n${jsonPrompt}\n\`\`\``,
+        projectId: this.projectId!,
+        parentId: parentTaskId,
+        priority: 3,
+      });
+
+      logger.info('Image prompt subtask created');
+    } catch (error) {
+      logger.error('Failed to create image prompt subtask', error);
       throw error;
     }
   }

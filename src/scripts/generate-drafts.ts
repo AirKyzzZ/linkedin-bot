@@ -20,8 +20,24 @@ async function main(): Promise<void> {
     const posts = await contentGenerator.generateMultiplePosts(draftsNeeded);
 
     for (const post of posts) {
-      await todoistService.createDraft(post.topic, post.content, post.format, post.suggestedDate);
+      let imagePrompt;
+      try {
+        imagePrompt = await contentGenerator.generateImagePrompt(post.content, post.topic);
+        logger.info(`Image prompt generated for: ${post.topic}`);
+      } catch (error) {
+        logger.warn(`Failed to generate image prompt for: ${post.topic}`, error);
+      }
+
+      await todoistService.createDraft(
+        post.topic,
+        post.content,
+        post.format,
+        post.suggestedDate,
+        imagePrompt
+      );
       logger.info(`Draft created: ${post.topic}`);
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     const finalCount = await todoistService.getDraftCount();

@@ -141,3 +141,41 @@ export function getFormatInstruction(format: PostFormat): string {
 
   return instructions[format];
 }
+
+export const IMAGE_PROMPT_SYSTEM = `You are an expert at creating image generation prompts for LinkedIn post visuals.
+
+Your task is to generate a JSON prompt for an AI image generator (nano banana) that will create a compelling visual to accompany a LinkedIn post.
+
+REQUIREMENTS:
+- The image should be professional and suitable for LinkedIn
+- It should visually represent the main theme/message of the post
+- Use modern, clean aesthetics (minimalist, tech-forward)
+- Avoid generic stock photo vibes - aim for something distinctive
+- No text in the image (the post will have text)
+- Consider abstract representations, metaphors, or symbolic imagery
+
+OUTPUT FORMAT (JSON only, no markdown):
+{
+  "prompt": "Detailed description of the image to generate",
+  "style": "The artistic style (e.g., minimalist, isometric, 3D render, flat design, gradient)",
+  "mood": "The emotional tone (e.g., professional, inspiring, bold, calm)",
+  "colors": "Color palette suggestion (e.g., blue and purple gradients, warm earth tones)",
+  "composition": "How elements should be arranged (e.g., centered, rule of thirds, asymmetric)"
+}
+
+IMPORTANT:
+- Write the prompt in English
+- Be specific and descriptive
+- The prompt should be 1-3 sentences, detailed enough for good generation
+- Focus on visual elements that metaphorically represent the post's message`;
+
+export function createImagePromptRequest(postContent: string, topic: string): string {
+  return `Create an image prompt for the following LinkedIn post.
+
+TOPIC: ${topic}
+
+POST CONTENT:
+${postContent}
+
+Generate a JSON prompt for an image that would visually complement this post. The image should capture the essence of the message without being too literal.`;
+}

@@ -4,7 +4,9 @@ import { logger } from '../utils/logger.js';
 import {
   SYSTEM_PROMPT,
   TOPIC_GENERATION_PROMPT,
+  IMAGE_PROMPT_SYSTEM,
   createPostPrompt,
+  createImagePromptRequest,
   POST_FORMATS,
   getFormatInstruction,
   type PostFormat,
@@ -26,6 +28,14 @@ interface GeneratedPost {
   format: PostFormat;
   characterCount: number;
   suggestedDate?: string;
+}
+
+export interface ImagePrompt {
+  prompt: string;
+  style: string;
+  mood: string;
+  colors: string;
+  composition: string;
 }
 
 const PRIMARY_MODEL = 'llama-3.3-70b-versatile';
@@ -224,6 +234,55 @@ export class ContentGenerator {
     }
 
     return this.generatePost(`${selectedTheme}: ${topic}`);
+  }
+
+  async generateImagePrompt(postContent: string, topic: string): Promise<ImagePrompt> {
+    logger.info(`Generating image prompt for topic: "${topic}"`);
+
+    const userPrompt = createImagePromptRequest(postContent, topic);
+
+    const tryGenerate = async (model: string): Promise<ImagePrompt> => {
+      const response = await this.client.chat.completions.create({
+        model,
+        max_tokens: 512,
+        messages: [
+          {
+            role: 'system',
+            content: IMAGE_PROMPT_SYSTEM,
+          },
+          {
+            role: 'user',
+            content: userPrompt,
+          },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No content in response');
+      }
+
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON found in response');
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]) as ImagePrompt;
+      logger.info(`Generated image prompt: ${parsed.style} style`);
+
+      return parsed;
+    };
+
+    try {
+      return await tryGenerate(this.currentModel);
+    } catch (error) {
+      if (this.isRateLimitError(error) && this.currentModel === PRIMARY_MODEL) {
+        this.switchToFallback();
+        return await tryGenerate(FALLBACK_MODEL);
+      }
+      logger.error('Failed to generate image prompt', error);
+      throw error;
+    }
   }
 }
 

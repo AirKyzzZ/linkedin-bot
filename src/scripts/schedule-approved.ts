@@ -51,7 +51,7 @@ async function main(): Promise<void> {
 
       if (suggestionMatch) {
           const dayStr = suggestionMatch[1];
-          preferredTime = suggestionMatch[2];
+          preferredTime = suggestionMatch[2] ?? '08:00';
           if (dayStr === 'Monday') preferredDay = 1;
           if (dayStr === 'Wednesday') preferredDay = 3;
           if (dayStr === 'Friday') preferredDay = 5;
