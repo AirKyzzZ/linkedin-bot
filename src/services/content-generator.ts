@@ -17,7 +17,9 @@ interface TopicIdea {
   title: string;
   angle: string;
   hook: string;
+  concept?: string;
   theme: string;
+  emotion?: string;
   suggestedDay: string;
   suggestedTime: string;
 }
@@ -62,7 +64,7 @@ export class ContentGenerator {
     const selectedFormat = availableFormats[randomIndex];
 
     if (!selectedFormat) {
-      return 'story';
+      return 'story-lesson';
     }
 
     this.usedFormats.push(selectedFormat);
@@ -97,7 +99,7 @@ export class ContentGenerator {
     const tryGenerate = async (model: string): Promise<TopicIdea[]> => {
       const response = await this.client.chat.completions.create({
         model,
-        max_tokens: 1024,
+        max_tokens: 2048,
         messages: [
           {
             role: 'user',
@@ -144,11 +146,12 @@ export class ContentGenerator {
     const tryGenerate = async (model: string): Promise<GeneratedPost> => {
       const response = await this.client.chat.completions.create({
         model,
-        max_tokens: 2048,
+        max_tokens: 4096,
+        temperature: 0.8,
         messages: [
           {
             role: 'system',
-            content: `${SYSTEM_PROMPT}\n\nFORMAT SPÉCIFIQUE POUR CE POST:\n${formatInstruction}`,
+            content: `${SYSTEM_PROMPT}\n\n═══════════════════════════════════════════════════════════════\nFORMAT SPÉCIFIQUE POUR CE POST\n═══════════════════════════════════════════════════════════════\n\n${formatInstruction}`,
           },
           {
             role: 'user',
@@ -165,8 +168,10 @@ export class ContentGenerator {
       const trimmedContent = content.trim();
       const characterCount = trimmedContent.length;
 
-      if (characterCount < 400 || characterCount > 3000) {
-        logger.warn(`Post length (${characterCount}) outside optimal range (800-1500)`);
+      if (characterCount < 1200) {
+        logger.warn(`Post too short (${characterCount} chars). Target: 1500-2500 chars. Content may lack depth.`);
+      } else if (characterCount > 3000) {
+        logger.warn(`Post too long (${characterCount} chars). Target: 1500-2500 chars. Consider trimming.`);
       }
 
       logger.info(`Generated post: ${characterCount} characters`);
@@ -201,10 +206,17 @@ export class ContentGenerator {
     for (const topic of topics) {
       try {
         const suggestedDate = `${topic.suggestedDay} at ${topic.suggestedTime}`;
+        let context = `Angle: ${topic.angle}\nHook suggéré: ${topic.hook}`;
+        if (topic.concept) {
+          context += `\nConcept/Framework à utiliser: ${topic.concept}`;
+        }
+        if (topic.emotion) {
+          context += `\nÉmotion visée: ${topic.emotion}`;
+        }
         const post = await this.generatePost(
-            topic.title, 
-            `Angle: ${topic.angle}\nHook suggéré: ${topic.hook}`,
-            suggestedDate
+          topic.title,
+          context,
+          suggestedDate
         );
         posts.push(post);
 
