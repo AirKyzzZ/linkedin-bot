@@ -146,8 +146,8 @@ export class ContentGenerator {
     const tryGenerate = async (model: string): Promise<GeneratedPost> => {
       const response = await this.client.chat.completions.create({
         model,
-        max_tokens: 4096,
-        temperature: 0.8,
+        max_tokens: 2048,
+        temperature: 0.75,
         messages: [
           {
             role: 'system',
@@ -168,10 +168,10 @@ export class ContentGenerator {
       const trimmedContent = content.trim();
       const characterCount = trimmedContent.length;
 
-      if (characterCount < 1200) {
-        logger.warn(`Post too short (${characterCount} chars). Target: 1500-2500 chars. Content may lack depth.`);
-      } else if (characterCount > 3000) {
-        logger.warn(`Post too long (${characterCount} chars). Target: 1500-2500 chars. Consider trimming.`);
+      if (characterCount < 600) {
+        logger.warn(`Post too short (${characterCount} chars). Target: 800-1400 chars. May lack substance.`);
+      } else if (characterCount > 1600) {
+        logger.warn(`Post too long (${characterCount} chars). Target: 800-1400 chars. Viral posts are SHORT.`);
       }
 
       logger.info(`Generated post: ${characterCount} characters`);
